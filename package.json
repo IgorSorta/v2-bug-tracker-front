@@ -1,0 +1,22 @@
+{
+    "name": "v2-bug-tracker",
+    "version": "0.0.2",
+    "description": "Bug tracker microservice",
+    "main": "app.js",
+    "scripts": {
+        "start": "nodemon app/app.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "GraphQl",
+        "Apollo",
+        "microservice"
+    ],
+    "author": "IgorK",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.17.1",
+        "express-graphql": "^0.11.0",
+        "graphql": "^15.3.0"
+    }
+}
