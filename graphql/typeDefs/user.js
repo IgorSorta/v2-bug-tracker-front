@@ -6,19 +6,19 @@ const {
 const user = gql `
 extend type Query {
   users: [User!]
-  user(id: ID!): User
+  user(user_id: ID!): User
   me: User
 }
 
 extend type Mutation {
-  signUp(name: String! email: String! password: String!): Token!
+  signUp(name: String! email: String! password: String!): Token
   signIn(login: String!, password: String!): Token!
-  deleteUser(id: ID!): Boolean!
-  changeRole(id: ID! name: String! role: userRole!): String!
+  deleteUser(user_id: ID!): Boolean!
+  changeRole(user_id: ID! name: String! role: userRole!): String!
 }
 
 type User {
-  id: ID!
+  user_id: ID!
   name: String!
   email: String!
   role: String!
@@ -28,7 +28,7 @@ type User {
 }
 
 type Token {
-  token: String!
+  token: String
 }
 
 enum userRole {

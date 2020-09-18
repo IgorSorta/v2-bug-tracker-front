@@ -6,16 +6,16 @@ const {
 const bug = gql `
 extend type Query {
   bugs: [Bug!]
-  bug(id: ID!): Bug
+  bug(bug_id: ID!): Bug
 }
 extend type Mutation {
   createBug(title: String! description: String!): Bug!
-  deleteBug(id: ID!): Boolean!
-  changeStatus(id: ID! status: bugStatus!): String!
-  setPriority(id: ID! priority:bugPriority!): String!
+  deleteBug(bug_id: ID!): Boolean!
+  changeStatus(bug_id: ID! status: bugStatus!): String!
+  setPriority(bug_id: ID! priority:bugPriority!): String!
 }
 type Bug {
-  id: ID!
+  bug_id: ID!
   user: User!
   title: String!
   description: String!

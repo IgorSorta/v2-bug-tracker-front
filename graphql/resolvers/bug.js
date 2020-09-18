@@ -9,8 +9,8 @@ module.exports = {
         //TODO *Get all bugs from DB
         bugs: async (parent, args, context) => {
             try {
-                const bugs = requestBug();
-                return await bugs;
+                const bugs = await requestBug();
+                return bugs;
             } catch (error) {
                 return error;
             }

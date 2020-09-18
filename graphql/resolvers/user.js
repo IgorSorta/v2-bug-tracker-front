@@ -1,9 +1,25 @@
 'use strict';
 const requestApi = require('../../helpers/requestApi');
+const {
+    sendCookie,
+    hashPassword,
+} = require('../../helpers/handler');
+const JWT = require('../../helpers/JWT');
 
-const requestUser = requestApi('http://127.0.0.1:3000/user');
-const requestMessage = requestApi('http://127.0.0.1:3000/message');
-const requestBug = requestApi('http://127.0.0.1:3000/bug');
+//TODO 
+// Saving user basic information to db
+// Creating token for authentication and send it to user
+// Request token from user and it parse it to authenticate user
+// (for every request checks user permision)
+// Graphql server sends -> (request or mutation data + server token)
+// Database server -> (checking gql_server token) -> (checking if data is correct) 
+//  -> if correct (execute request or mutation ) -> (sending response wint some data)
+//  -> if not correct or unauthorized (sendin error message)
+
+const requestUser = requestApi('http://127.0.0.1:3030/user/params');
+const registerUser = requestApi('http://127.0.0.1:3030/user/params')
+const requestMessage = requestApi('http://127.0.0.1:3030/message/params');
+const requestBug = requestApi('http://127.0.0.1:3030/bug/params');
 
 module.exports = {
     Query: {
@@ -13,10 +29,18 @@ module.exports = {
                 me
             } = context;
             try {
-                const user = requestUser({
-                    me: me
-                })
-                return await user;
+                console.log(me)
+                const data = {
+                    select: "*",
+                    where: {
+                        name: me.name,
+                        password: me.password
+                    }
+                };
+                const user = await requestUser(data, 'POST')
+                console.log(user.data.data[0]);
+                return user.data.data[0]
+
             } catch (error) {
                 return error;
             }
@@ -25,13 +49,18 @@ module.exports = {
         // *Get user where id is (uuidv4)
         user: async (parent, args, context) => {
             const {
-                id
+                user_id
             } = args;
             try {
-                const user = requestUser({
-                    id: id
-                });
-                return await user;
+                const data = {
+                    select: "*",
+                    where: {
+                        user_id: user_id
+                    }
+                };
+                const user = await requestUser(data, 'POST');
+                console.log(user.data.data[0]);
+                return user.data.data[0];
             } catch (error) {
                 return error;
             }
@@ -45,7 +74,7 @@ module.exports = {
             } catch (error) {
                 return error;
             }
-        }
+        },
     },
     Mutation: {
         // TODO *Register user and return token
@@ -55,17 +84,25 @@ module.exports = {
                 email,
                 password
             } = args;
-            try {
-                const result = requestUser({
-                    name: name,
-                    email: email,
-                    password: password
-                }, 'POST');
-                return await result;
-            } catch (error) {
-                return error;
+
+            const token = JWT.createToken({
+                name,
+                email,
+            });
+
+            const result = registerUser({
+                name,
+                email,
+                password: await hashPassword(password),
+            }, "POST");
+
+            if (result !== null || typeof(result) !== Error) {
+                sendCookie(token, context);
             }
 
+            return {
+                token: token
+            };
         },
         // TODO*Login user (and return token)
         signIn: async (parent, args, context) => {
@@ -78,6 +115,18 @@ module.exports = {
                     login: login,
                     password: password
                 }, 'POST');
+
+                const token = JWT.createToken({
+                    name,
+                    password,
+                });
+                // TODO send name and pass to find user
+
+                if (!result) throw new Error('signIn error');
+                if (result !== null || typeof(result) !== Error) {
+                    sendCookie(token, context);
+                }
+
                 return await result;
             } catch (error) {
                 return error;
@@ -129,10 +178,15 @@ module.exports = {
             return await result;
         },
         bugs: async (user, args, context) => {
-            const result = requestBug({
-                userId: user.id
-            });
-            return await result;
+            const data = {
+                select: "*",
+                where: {
+                    user_id: user.user_id
+                }
+            };
+            const result = await requestBug(data, 'POST');
+            console.log(result.data.data)
+            return result.data.data;
         }
     },
 };
